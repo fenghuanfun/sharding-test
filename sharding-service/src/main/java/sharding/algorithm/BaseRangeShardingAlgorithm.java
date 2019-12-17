@@ -1,5 +1,6 @@
 package sharding.algorithm;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Range;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +24,7 @@ public abstract class BaseRangeShardingAlgorithm<C extends Comparable<?>> implem
         if (log.isDebugEnabled()) {
             log.debug("availableTargetNames: {}\nshardingValue: {}", availableTargetNames, shardingValue);
         }
+        log.info("availableTargetNames: {}\nshardingValue: {}", availableTargetNames, shardingValue);
         Range<String> range = this.convertWithTableName(shardingValue, this::getActualTableName);
         if (range == null) {
             return availableTargetNames;
@@ -30,6 +32,7 @@ public abstract class BaseRangeShardingAlgorithm<C extends Comparable<?>> implem
         List<String> list = availableTargetNames.stream()
                 .filter(range::contains)
                 .collect(Collectors.toList());
+        log.info(JSONObject.toJSONString(list));
         return CollectionUtils.isEmpty(list) ? availableTargetNames : list;
     }
 

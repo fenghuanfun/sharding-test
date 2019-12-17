@@ -21,4 +21,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
      */
     List<Order> findByCreateTimeBetween(Timestamp start, Timestamp end);
 
+    List<Order> findByCreateTime(Timestamp timestamp);
+
+    List<Order> findByCreateTimeIn(List<Timestamp> timestamps);
+
 }

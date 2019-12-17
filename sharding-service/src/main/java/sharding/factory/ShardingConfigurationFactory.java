@@ -5,7 +5,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.strategy.ComplexShardingStrategyConfiguration;
+import org.apache.shardingsphere.api.config.sharding.strategy.StandardShardingStrategyConfiguration;
 import sharding.algorithm.BaseComplexKeysShardingAlgorithm;
+import sharding.algorithm.TimeStampPreciseShardingAlgorithm;
+import sharding.algorithm.TimeStampRangeShardingAlgorithm;
+import sharding.handler.StringTimePreciseShardingHandler;
+import sharding.handler.StringTimeRangeShardingHandler;
+import sharding.handler.TimestampPreciseShardingHandler;
+import sharding.handler.TimestampRangeShardingHandler;
 
 import java.util.List;
 import java.util.Properties;
@@ -23,7 +30,8 @@ public class ShardingConfigurationFactory {
         for (String tableNames : tableNamesList) {
             if (tableNames.contains(SPILT)) {
                 for (String tableName : StringUtils.split(tableNames, SPILT)) {
-                    shardingRuleConfiguration.getTableRuleConfigs().add(defaultCreateTimeTableRuleConfiguration(datasourceName, tableName.trim()));
+                    shardingRuleConfiguration.getTableRuleConfigs().add(stringCreateTimeTableRuleConfiguration(datasourceName, tableName.trim()));
+//                    shardingRuleConfiguration.getTableRuleConfigs().add(defaultCreateTimeTableRuleConfiguration(datasourceName, tableName.trim()));
                 }
             } else {
                 shardingRuleConfiguration.getTableRuleConfigs().add(defaultCreateTimeTableRuleConfiguration(datasourceName, tableNames.trim()));
@@ -34,11 +42,24 @@ public class ShardingConfigurationFactory {
     }
 
     public static TableRuleConfiguration defaultCreateTimeTableRuleConfiguration(String datasourceName, String tableName) {
-        TableRuleConfiguration tableRule = new TableRuleConfiguration(tableName, String.format("%s.%s_$->{19..19}0$->{1..6}", datasourceName, tableName));
-//        tableRule.setTableShardingStrategyConfig(
-//                new StandardShardingStrategyConfiguration("create_time", new TimeStampPreciseShardingAlgorithm(), new TimeStampRangeShardingAlgorithm()));
+        TableRuleConfiguration tableRule = new TableRuleConfiguration(tableName, String.format("%s.%s_$->{19..20}$->{10..12}", datasourceName, tableName));
         tableRule.setTableShardingStrategyConfig(
-                new ComplexShardingStrategyConfiguration("id,create_time", new BaseComplexKeysShardingAlgorithm()));
+                new StandardShardingStrategyConfiguration("create_time", new TimeStampPreciseShardingAlgorithm(), new TimeStampRangeShardingAlgorithm()));
+        return tableRule;
+    }
+
+    public static TableRuleConfiguration stringCreateTimeTableRuleConfiguration(String datasourceName, String tableName) {
+        TableRuleConfiguration tableRule = new TableRuleConfiguration(tableName,
+                String.format("%s.%s_$->{19..19}$->{11..12},%s.%s_$->{20..20}0$->{1..2}",
+                        datasourceName, tableName, datasourceName, tableName));
+        ComplexKeyShadingHandlerBuilder builder = ComplexKeyShadingHandlerBuilder.builder()
+                .addHandler("create_time", new TimestampPreciseShardingHandler())
+                .addHandler("create_time", new TimestampRangeShardingHandler())
+                .addHandler("create_time", new StringTimePreciseShardingHandler())
+                .addHandler("create_time", new StringTimeRangeShardingHandler())
+                .build();
+        tableRule.setTableShardingStrategyConfig(
+                new ComplexShardingStrategyConfiguration("create_time", new BaseComplexKeysShardingAlgorithm(builder)));
         return tableRule;
     }
 
