@@ -47,11 +47,9 @@ public class BaseComplexKeysShardingAlgorithm implements ComplexKeysShardingAlgo
         if (log.isDebugEnabled()) {
             log.debug("availableTargetNames: {}\nshardingValue: {}", availableTargetNames, shardingValue);
         }
-        Map<String, Collection<String>> preciseMap = shardingValue.getColumnNameAndShardingValuesMap();
-        Map<String, Range<String>> rangeMap = shardingValue.getColumnNameAndRangeValuesMap();
-        boolean precise = MapUtils.isNotEmpty(preciseMap);
-        boolean range = MapUtils.isNotEmpty(rangeMap);
-        if (precise) {
+        Map<String, Collection<String>> preciseMap;
+        Map<String, Range<String>> rangeMap;
+        if (MapUtils.isNotEmpty(preciseMap = shardingValue.getColumnNameAndShardingValuesMap())) {
             for (Map.Entry<String, Collection<String>> entry : preciseMap.entrySet()) {
                 List<BasePreciseShardingHandler<? extends Comparable<?>>> handlers = preciseHandlers.get(entry.getKey());
                 if (CollectionUtils.isNotEmpty(handlers)) {
@@ -66,7 +64,7 @@ public class BaseComplexKeysShardingAlgorithm implements ComplexKeysShardingAlgo
                     return actualTableNames;
                 }
             }
-        } else if (range) {
+        } else if (MapUtils.isNotEmpty(rangeMap = shardingValue.getColumnNameAndRangeValuesMap())) {
             for (Map.Entry<String, Range<String>> entry : rangeMap.entrySet()) {
                 List<BaseRangeShardingHandler<? extends Comparable<?>>> handlers = rangeHandlers.get(entry.getKey());
                 if (CollectionUtils.isNotEmpty(handlers)) {
