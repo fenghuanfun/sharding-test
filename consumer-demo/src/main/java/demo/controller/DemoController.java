@@ -44,6 +44,11 @@ public class DemoController {
         orderService.testStringRangeTime();
     }
 
+    @RequestMapping("/testHaving")
+    public void testHaving() {
+        orderService.testHaving();
+    }
+
     @SneakyThrows
     @RequestMapping("/createTable")
     public void createTable() {

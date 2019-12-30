@@ -21,5 +21,7 @@ public interface OrderService {
 
     void testStringRangeTime();
 
+    void testHaving();
+
     void createTable() throws SQLException;
 }

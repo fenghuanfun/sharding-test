@@ -2,6 +2,7 @@ package demo.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -115,8 +115,29 @@ public class OrderServiceImpl implements OrderService {
         System.out.println(JSONObject.toJSONString(betweenRes, SerializerFeature.PrettyFormat));
     }
 
-    @Autowired
-    private EntityManager entityManager;
+    @Override
+    public void testHaving() {
+        List<Tuple> fetch1 = queryFactory.select(qOrder.testId, qOrder.id.count())
+                .from(qOrder)
+                .where(
+                        qOrder.createTime.eq(Timestamp.valueOf(dateTime))
+                )
+                .groupBy(qOrder.testId)
+                .having(qOrder.id.count().gt(1))
+                .fetch();
+        List<Tuple> fetch2 = queryFactory.select(qOrder.testId, qOrder.id.count())
+                .from(qOrder)
+                .where(
+                        qOrder.createTime.between(Timestamp.valueOf(dateTime.minusMonths(1)), Timestamp.valueOf(dateTime.plusMonths(2)))
+                )
+                .groupBy(qOrder.testId)
+                .having(qOrder.id.count().gt(1))
+                .fetch();
+        for (Tuple tuple : fetch2) {
+            System.out.println(tuple.get(qOrder.testId) + " : " + tuple.get(qOrder.id.count()));
+        }
+    }
+
     @Autowired
     private DataSource dataSource;
 
