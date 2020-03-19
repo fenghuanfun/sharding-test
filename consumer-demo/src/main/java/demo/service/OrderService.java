@@ -23,5 +23,7 @@ public interface OrderService {
 
     void testHaving();
 
+    void testDistinct();
+
     void createTable() throws SQLException;
 }

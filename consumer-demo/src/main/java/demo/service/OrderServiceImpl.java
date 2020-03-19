@@ -90,6 +90,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void testStringPreciseTime() {
+        // eq 未正确路由
         List<Order> eqRes = queryFactory.selectFrom(qOrder)
                 .where(
                         dateTemplate.eq("2019-11-17")
@@ -109,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
     public void testStringRangeTime() {
         List<Order> betweenRes = queryFactory.selectFrom(qOrder)
                 .where(
-                        dateTemplate.between("2019-11-01", "2020-02-30")
+                        dateTemplate.between("2019-12-01", "2020-02-30")
                 )
                 .fetch();
         System.out.println(JSONObject.toJSONString(betweenRes, SerializerFeature.PrettyFormat));
@@ -125,6 +126,8 @@ public class OrderServiceImpl implements OrderService {
                 .groupBy(qOrder.testId)
                 .having(qOrder.id.count().gt(1))
                 .fetch();
+
+        // 跨表的不支持having
         List<Tuple> fetch2 = queryFactory.select(qOrder.testId, qOrder.id.count())
                 .from(qOrder)
                 .where(
@@ -132,6 +135,28 @@ public class OrderServiceImpl implements OrderService {
                 )
                 .groupBy(qOrder.testId)
                 .having(qOrder.id.count().gt(1))
+                .fetch();
+        for (Tuple tuple : fetch2) {
+            System.out.println(tuple.get(qOrder.testId) + " : " + tuple.get(qOrder.id.count()));
+        }
+    }
+
+    @Override
+    public void testDistinct() {
+        List<Tuple> fetch1 = queryFactory.select(qOrder.testId, qOrder.id.countDistinct())
+                .from(qOrder)
+                .where(
+                        qOrder.createTime.eq(Timestamp.valueOf(dateTime))
+                )
+                .groupBy(qOrder.testId)
+                .fetch();
+
+        List<Tuple> fetch2 = queryFactory.selectDistinct(qOrder.testId, qOrder.id.count())
+                .from(qOrder)
+                .where(
+                        qOrder.createTime.between(Timestamp.valueOf(dateTime.minusMonths(1)), Timestamp.valueOf(dateTime.plusMonths(2)))
+                )
+                .groupBy(qOrder.testId)
                 .fetch();
         for (Tuple tuple : fetch2) {
             System.out.println(tuple.get(qOrder.testId) + " : " + tuple.get(qOrder.id.count()));

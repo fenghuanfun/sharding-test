@@ -20,6 +20,8 @@ import java.util.List;
 @Table(name = "t_user")
 public class User extends BaseEntity {
 
+    private String name;
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<UserItem> userItems;
 

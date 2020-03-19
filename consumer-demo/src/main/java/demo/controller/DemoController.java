@@ -49,6 +49,11 @@ public class DemoController {
         orderService.testHaving();
     }
 
+    @RequestMapping("/testDistinct")
+    public void testDistinct() {
+        orderService.testDistinct();
+    }
+
     @SneakyThrows
     @RequestMapping("/createTable")
     public void createTable() {
